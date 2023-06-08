@@ -6,7 +6,8 @@ import openai
 import pandas as pd
 
 import multiprocessing as mp
-
+import prompt_step_1
+import prompt_step_2
 
 # Load Environment variables and have them as constants
 dotenv.load_dotenv()
@@ -14,8 +15,7 @@ dotenv.load_dotenv()
 # Get key from .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-def chat(messages, stream=False, queue=None):
+def send_chat(messages, stream=False, queue=None):
     """
     Generate text using ChatGPT as a separate process
     """
@@ -29,104 +29,20 @@ def chat(messages, stream=False, queue=None):
         )
     except Exception as e:
         print(e)
-        if queue is not None:
-            queue.put(None)
         return None
 
-    # Add to queue (for inter-process communication)
-    if queue is not None:
-        if not stream:
-            queue.put(gpt_res['choices'][0]['message'])
-        else:
-            # Add chunks to queue when streaming
-            for chunk in gpt_res:
-                try:
-                    queue.put(chunk['choices'][0]['delta'])
-                except EOFError:
-                    continue
-    return gpt_res
+    return gpt_res['choices'][0]['message']['content']
 
 
-
-system_prompt = """
-You are a writer. Given a description of the character's PERSONALITY_TRAIT in the play, write a bio of the character. \
-
-The bio format you will write is as follows.
-
-Output format(JSON):
-{
-    "name": <Korean Name>,
-    "age": <Between late teens and early 30s>,
-    "height": <Between 160cm and 200cm>,
-    "hobby": <Decide based on PERSONALITY_TRAIT>,
-    "mbti": <Decide based on PERSONALITY_TRAIT>,
-    "personality": <Decide based on PERSONALITY_TRAIT>,
-    "occupation": <Decide based on PERSONALITY_TRAIT>,
-}
-"""
-
-example_input_prompt = "양양에서 서핑샵을 운영하고 있고, 밝고 쾌활한 성격의 20대 중반 남자캐릭터를 만들어줘."
-
-example_output_prompt = """
-{
-    "name": "정시환",
-    "age": "25세",
-    "height": "182cm",
-    "hobby": "영화감상",
-    "mbti": "ENTP",
-    "personality": "적극적인, 직진남",
-    "occupation": "밴드 보컬+기타",
-}
-"""
-
-
-def get_messages(user_input: str):
-    return [
-        {
-            "role": "system",
-            "content": system_prompt
-        },
-        {
-            "role": "user",
-            "content": example_input_prompt
-        },
-        {
-            "role": "assistant",
-            "content": example_output_prompt
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
-    ]
-
-
-def set_up_default_view():
-    st.title('가상 캐스팅')
-    user_input = st.text_input('캐릭터의 성격을 알려주세요.', "유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
-    show_actor_profile(user_input)
 
 def show_actor_profile(user_input: str):
-    messages = get_messages(user_input)
-    manager = mp.Manager()
-    queue = manager.Queue()
-    p = mp.Process(target=chat, args=(messages, True, queue))
-    p.start()
-    response = ""
-    profile_rows = []
-    while True:
-        try:
-            chunk = queue.get(timeout=3)
-            if chunk == {}:
-                break
-            if 'content' in chunk:
-                response += chunk['content']
-                # print(response)
-        except Exception as e:
-            continue
-    p.join(timeout=30)
-
+    '''
+    Step 1: Generate a bio of a character in the play.
+    '''
+    messages = prompt_step_1.get_messages(user_input)
+    response = send_chat(messages)
     try:
+        print(response)
         actor_profile_json = json.loads(response)
         profile = {
             "이름": actor_profile_json["name"], 
@@ -140,12 +56,56 @@ def show_actor_profile(user_input: str):
         df = pd.DataFrame([
             profile,
         ])
-        st.table(df)
+        return st.data_editor(df)
+
     except Exception as e:
         print(e)
         return
 
 
+def show_actor_details(actor_bio_data):
+    '''
+    Step 2: Generate a detailed profile of the character.
+    '''
+    st.subheader('캐릭터 상세 정보 보기')
+    if not st.button('정보 생성'):
+        st.write('정보 생성을 눌러주세요.')
+    else:
+        actor_bio = {
+            "name": actor_bio_data["이름"].iloc[0], 
+            "age": actor_bio_data["나이"].iloc[0], 
+            "height": actor_bio_data["키"].iloc[0], 
+            "hobby": actor_bio_data["취미"].iloc[0], 
+            "mbti": actor_bio_data["MBTI"].iloc[0], 
+            "personality": actor_bio_data["성격"].iloc[0], 
+            "occupation": actor_bio_data["직업"].iloc[0]
+        }
+        print(actor_bio)
+        messages = prompt_step_2.get_messages(json.dumps(actor_bio))
+        response = send_chat(messages)
+        try:
+            print(response)
+            actor_detail_json = json.loads(response)
+            print(actor_detail_json)
+            profile = {
+                "appearance":actor_detail_json["appearance"],
+                "fashion":actor_detail_json["fashion"],
+            }
+            df = pd.DataFrame([
+                profile,
+            ])
+            return st.table(df)
+        except Exception as e:
+            print(e)
+            return
+        
+
+
+def set_up_default_view():
+    st.title('가상 캐스팅')
+    user_input = st.text_input('캐릭터의 성격을 알려주세요.', "유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
+    actor_bio_data = show_actor_profile(user_input)
+    result = show_actor_details(actor_bio_data)
 
 if __name__ == '__main__':
     set_up_default_view()
