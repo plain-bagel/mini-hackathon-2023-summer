@@ -25,6 +25,7 @@ def send_chat(messages, stream=False, queue=None):
             temperature=0.8,
             max_tokens=1000,
             stream=stream,
+            n=1,
             messages=messages,
         )
     except Exception as e:
@@ -35,28 +36,33 @@ def send_chat(messages, stream=False, queue=None):
 
 
 
-def show_actor_profile(user_input: str):
+@st.cache_data()
+def show_actor_profile(user_input):
     '''
     Step 1: Generate a bio of a character in the play.
     '''
     messages = prompt_step_1.get_messages(user_input)
     response = send_chat(messages)
     try:
+        print("Step 1 response")
         print(response)
         actor_profile_json = json.loads(response)
-        profile = {
-            "이름": actor_profile_json["name"], 
-            "나이": actor_profile_json["age"], 
-            "키": actor_profile_json["height"], 
-            "취미": actor_profile_json["hobby"], 
-            "MBTI": actor_profile_json["mbti"], 
-            "성격": actor_profile_json["personality"], 
-            "직업": actor_profile_json["occupation"]
+        current_profile = {
+            "name": actor_profile_json["name"], 
+            "date_of_birth": actor_profile_json["date_of_birth"], 
+            "height": actor_profile_json["height"], 
+            "hobby": actor_profile_json["hobby"], 
+            "mbti": actor_profile_json["mbti"], 
+            "family_relations": actor_profile_json["family_relations"], 
+            "personality": actor_profile_json["personality"], 
+            "style": actor_profile_json["style"], 
+            "occupation": actor_profile_json["occupation"]
         }
         df = pd.DataFrame([
-            profile,
+            current_profile,
         ])
-        return st.data_editor(df)
+        st.data_editor(df)
+        return current_profile
 
     except Exception as e:
         print(e)
