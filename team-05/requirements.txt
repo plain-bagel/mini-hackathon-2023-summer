@@ -1,0 +1,9 @@
+# For ChatGPT API
+openai
+
+# For Web App
+streamlit
+watchdog
+
+# Parse .env
+python-dotenv
