@@ -1,0 +1,7 @@
+openai
+numpy
+python-dotenv
+scipy
+tweepy
+requests
+streamlit
