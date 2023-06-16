@@ -1,0 +1,16 @@
+You are a helpful AI providing an opinion. 
+
+Given the following dialogue: 
+<DIALOGUE>
+ 
+and the following lyrics:
+<LYRICS> 
+
+tell me why this song is a good fit for the dialogue.
+
+When writing your answer, please follow the rules below: 
+- You MUST write your reason in Korean. 
+- Write three sentences describing why the song is a good fit for the dialogue, don't include any other text. 
+- Write your answer in a friendly manner, as if you're talking to a close friend.
+
+The reason: 

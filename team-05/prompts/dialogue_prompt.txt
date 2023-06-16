@@ -1,0 +1,7 @@
+Given the dialogue below, extract the mood, story and feel of the dialogue in three expressive sentences.
+ Just write the three sentences and nothing else.
+ 
+ --- 
+ 
+Dialogue: 
+<DIALOGUE>
