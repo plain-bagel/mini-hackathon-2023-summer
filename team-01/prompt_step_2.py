@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 # Step 2: Generate details about the character using the bio.
 
 import prompt_step_1
@@ -22,23 +23,10 @@ OUTPUT_PROMPT_EXAMPLE = """{
 }"""
 
 
-
 def get_messages(user_input: str):
     return [
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": INPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "assistant",
-            "content": OUTPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": INPUT_PROMPT_EXAMPLE},
+        {"role": "assistant", "content": OUTPUT_PROMPT_EXAMPLE},
+        {"role": "user", "content": user_input},
     ]

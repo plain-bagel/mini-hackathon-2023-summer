@@ -7,55 +7,51 @@ song_recommender.py - Jeehoon Kang
 
 import pickle
 import time
+from multiprocessing import Manager, Process
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import streamlit as st
-from multiprocessing import Manager, Process
-
-from _prompt import Prompt
 from _gpt_utils import chat, embed
+from _prompt import Prompt
+
 
 # Paths to prompts and lyrics DB
 DIALOGUE_PROMPT_PATH = Path("prompts/dialogue_prompt.txt")
 RECOMMEND_PROMPT_PATH = Path("prompts/recommendation_prompt.txt")
 LYRICS_DB_PATH = Path("db/lyrics_embs.pkl")
 
+LyricsDB = list[dict[str, str | list[float]]]
+
 
 @st.cache_data
-def load_lyrics_db(db_path: Path) -> list[dict]:
+def load_lyrics_db(db_path: Path) -> LyricsDB:
     """
     Load lyrics embedding database
     "emb" - list[float] of length 1536
     returns: list of dictionaries with keys "title", "lyrics", "artist", "emb"
     """
     assert db_path.exists(), "Lyrics DB does not exist"
-    with open(db_path, "rb") as db_f:
-        db = pickle.load(db_f)
+    with db_path.open("rb") as db_f:
+        db: LyricsDB = pickle.load(db_f)
     return db
 
 
-def get_dialogue_embedding(dialogue: str) -> Union[list[float], None]:
+def get_dialogue_embedding(dialogue: str) -> list[float] | None:
     """
     Use ChatGPT to transform dialogue into full text, and then get embedding of full text
     returns: list[float] of length 1536 representing embedding of full text
     """
     queue = Manager().Queue()
     dialogue = dialogue.replace("\n", " ")
-    msg = [
-        {
-            "role": "user",
-            "content": dialogue
-        }
-    ]
+    msg = [{"role": "user", "content": dialogue}]
 
     # Query ChatGPT
     proc = Process(target=chat, args=(msg, False, queue))
     proc.start()
     try:
         res = queue.get(timeout=10)
-        res = res['content']
+        res = res["content"]
         proc.join()
     except Exception as e:
         print("ChatGPT Error: ", e)
@@ -65,7 +61,9 @@ def get_dialogue_embedding(dialogue: str) -> Union[list[float], None]:
     proc = Process(target=embed, args=(res, queue))
     proc.start()
     try:
-        embedding = queue.get(timeout=10)
+        embedding: list[float] | None = queue.get(timeout=10)
+        if embedding is None:
+            raise Exception("Embedding is None")
         proc.join()
     except Exception as e:
         print("Embedding Error: ", e)
@@ -79,10 +77,12 @@ def get_embedding_distance(emb1: list[float], emb2: list[float]) -> float:
     TODO: Normalize vectors and use cosine distance instead?
     returns: float representing distance between two embeddings
     """
-    return np.linalg.norm(np.array(emb1) - np.array(emb2))
+    return float(np.linalg.norm(np.array(emb1) - np.array(emb2)))
 
 
-def get_recommendation(prompts: tuple[Prompt, Prompt], dialogue_input: str, lyrics_db: list[dict]) -> Union[tuple[dict, str], None]:
+def get_recommendation(
+    prompts: tuple[Prompt, Prompt], dialogue_input: str, lyrics_db: LyricsDB
+) -> tuple[dict, str] | None:
     """
     Full Recommendation Pipeline
     1. Get dialogue embedding
@@ -99,16 +99,16 @@ def get_recommendation(prompts: tuple[Prompt, Prompt], dialogue_input: str, lyri
         embedding = get_dialogue_embedding(str(dialogue_prompt))
         if embedding is None:
             st.error("대화를 분석하는데 오류가 발생했어요. 다시 시도해주세요.")
-            return
+            return None
 
     # Compare dialogue embedding with lyrics embeddings
     # TODO: For larger DB size, use KDTree or ANN to speed up search
     with st.spinner("대화에 어울리는 노래를 찾고 있어요(2/3)..."):
         time.sleep(2)
-        best = {"title": "None", "lyrics": "None", "score": 10000}
+        best = {"title": "None", "lyrics": "None", "score": 10000.0}
         for lyric in lyrics_db:
-            score = get_embedding_distance(embedding, lyric["emb"])
-            if score < best["score"]:
+            score = get_embedding_distance(embedding, lyric["emb"])  # type: ignore
+            if score < float(best["score"]):  # type: ignore
                 best = {
                     "title": lyric["title"],
                     "lyrics": lyric["lyrics"],
@@ -121,16 +121,11 @@ def get_recommendation(prompts: tuple[Prompt, Prompt], dialogue_input: str, lyri
         "LYRICS": best["lyrics"],
     }
     for key, value in recommend_data.items():
-        recommend_prompt.substitute(key, value)
+        recommend_prompt.substitute(key, str(value))
 
     # Query ChatGPT for recommendation reason based on dialogue and lyrics
     recommend_prompt_str = str(recommend_prompt).replace("\n", " ")
-    msg = [
-        {
-            "role": "user",
-            "content": recommend_prompt_str
-        }
-    ]
+    msg = [{"role": "user", "content": recommend_prompt_str}]
     with st.spinner("추천 이유를 작성하고 있어요(3/3).."):
         proc = Process(target=chat, args=(msg, False, queue))
         proc.start()
@@ -146,7 +141,7 @@ def get_recommendation(prompts: tuple[Prompt, Prompt], dialogue_input: str, lyri
     return best, rec_reason
 
 
-def main():
+def main() -> None:
     st.title("챗껄룩 🐈‍⬛")
     st.info("🎶 대화 스니핏을 입력하시면, 감정선과 스토리를 분석해 큐레이션된 노래 DB에서 어울리는 노래를 찾아 추천해준답니다!")
     st.markdown("""---""")
@@ -171,7 +166,7 @@ def main():
         rec_result = get_recommendation(
             prompts=(dialogue_prompt, recommend_prompt),
             dialogue_input=dialogue_input,
-            lyrics_db=lyrics_db
+            lyrics_db=lyrics_db,
         )
         if rec_result is None:
             st.error("대화를 분석하는데 오류가 발생했어요. 다시 시도해주세요.")
@@ -183,11 +178,11 @@ def main():
         st.markdown(f"**{best['title']}**")
 
         st.markdown("""---\n""")
-        st.subheader(f"그 노래는 다음과 같은 가사를 가지고 있어:")
+        st.subheader("그 노래는 다음과 같은 가사를 가지고 있어:")
         st.markdown(f"{best['lyrics']}")
 
         st.markdown("""---\n""")
-        st.subheader(f"이 노래를 추천한 이유는 다음과 같아:")
+        st.subheader("이 노래를 추천한 이유는 다음과 같아:")
         st.text(f"{rec_reason}")
 
 

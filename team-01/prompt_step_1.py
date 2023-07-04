@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 # STEP 1: Write a bio of a character in the play.
 
 SYSTEM_PROMPT = """
@@ -33,22 +34,11 @@ OUTPUT_PROMPT_EXAMPLE = """
 }
 """
 
+
 def get_messages(user_input: str):
     return [
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": INPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "assistant",
-            "content": OUTPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": INPUT_PROMPT_EXAMPLE},
+        {"role": "assistant", "content": OUTPUT_PROMPT_EXAMPLE},
+        {"role": "user", "content": user_input},
     ]

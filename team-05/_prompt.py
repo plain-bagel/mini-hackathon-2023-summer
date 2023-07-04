@@ -5,12 +5,13 @@ from pathlib import Path
 class Prompt:
     def __init__(self, prompt_path: Path, subs_pattern: str = "<>"):
         assert prompt_path.exists(), "Prompt file does not exist"
-        assert len(subs_pattern) == 2, "Substitution pattern must be of length 2," \
-                                       " each character representing the start and end of a substitution"
+        assert len(subs_pattern) == 2, (
+            "Substitution pattern must be of length 2,"
+            " each character representing the start and end of a substitution"
+        )
 
         # Load prompt text
-        with open(prompt_path, "r") as prompt_f:
-            self.base = prompt_f.read()
+        self.base = prompt_path.read_text()
         self.subs_pattern = subs_pattern
 
         # Find initial substitutions
@@ -19,10 +20,10 @@ class Prompt:
         # Full Prompt
         self.prompt = self.base
 
-    def __str__(self):
+    def __str__(self) -> str:
         # For ease of casting, printing, debugging
         if self._find_subs(self.prompt):
-            warnings.warn("Prompt still contains substitutions")
+            warnings.warn("Prompt still contains substitutions", stacklevel=2)
         return self.prompt
 
     def _find_subs(self, text: str) -> list[str]:
@@ -32,7 +33,7 @@ class Prompt:
             if char == self.subs_pattern[0]:
                 start = i
             elif char == self.subs_pattern[1] and start is not None:
-                subs.append(text[start + 1:i])
+                subs.append(text[start + 1 : i])
                 start = None
         return subs
 

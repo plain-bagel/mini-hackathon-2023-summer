@@ -1,5 +1,7 @@
-import openai
+# mypy: ignore-errors
 import os
+
+import openai
 import tweepy
 from dotenv import load_dotenv
 
@@ -14,15 +16,24 @@ def request_chat(setting, prompt):
             {"role": "user", "content": prompt},
         ],
     )
-    return response['choices'][0]['message']['content']
+    return response["choices"][0]["message"]["content"]
 
 
 def make_tweet(contents):
-    twitter_key, twitter_key_secret, twitter_access_token, twitter_access_token_secret, twitter_access_bearer_token = \
-        get_twitter_key()
-    client = tweepy.Client(bearer_token=twitter_access_bearer_token, consumer_key=twitter_key,
-                           consumer_secret=twitter_key_secret, access_token=twitter_access_token,
-                           access_token_secret=twitter_access_token_secret)
+    (
+        twitter_key,
+        twitter_key_secret,
+        twitter_access_token,
+        twitter_access_token_secret,
+        twitter_access_bearer_token,
+    ) = get_twitter_key()
+    client = tweepy.Client(
+        bearer_token=twitter_access_bearer_token,
+        consumer_key=twitter_key,
+        consumer_secret=twitter_key_secret,
+        access_token=twitter_access_token,
+        access_token_secret=twitter_access_token_secret,
+    )
     client.create_tweet(text=contents)
 
 
@@ -33,7 +44,13 @@ def get_twitter_key():
     twitter_access_token = os.getenv("TWITTER_ACCESS_TOKEN")
     twitter_access_token_secret = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
     twitter_access_bearer_token = os.getenv("TWITTER_BEARER_TOKEN")
-    return twitter_key, twitter_key_secret, twitter_access_token, twitter_access_token_secret, twitter_access_bearer_token
+    return (
+        twitter_key,
+        twitter_key_secret,
+        twitter_access_token,
+        twitter_access_token_secret,
+        twitter_access_bearer_token,
+    )
 
 
 if __name__ == "__main__":
