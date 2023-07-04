@@ -5,50 +5,52 @@ from pathlib import Path
 from _gpt_utils import chat, embed
 from _prompt import Prompt
 
+
 # Get song DB and prompt to extract embeddable context
 LYRICS_PROMPT_PATH = Path("prompts/lyrics_prompt.txt")
 CRAWLED_DATA_PATH = Path("db/song_db.json")
 
 
-def main():
+def main() -> None:
     # Read crawled JSON data
-    with open(CRAWLED_DATA_PATH, 'r') as file:
+    with CRAWLED_DATA_PATH.open() as file:
         lyrics_db = json.load(file)
 
     # Extract context from song lyrics
     lyrics_prompt = Prompt(LYRICS_PROMPT_PATH, subs_pattern="<>")
 
     # Iterate over lyrics in DB and extract context with ChatGPT, then embed it
-    lyrics_embs = []
+    lyrics_embs: list[dict[str, str | list[float]]] = []
     for lyrics in lyrics_db:
-        print(str(len(lyrics_embs)) + ": " + lyrics['title'])
+        print(str(len(lyrics_embs)) + ": " + lyrics["title"])
 
         # Query ChatGPT to extract context from lyrics
-        lyrics_prompt.substitute("LYRICS", lyrics['lyrics'])
+        lyrics_prompt.substitute("LYRICS", lyrics["lyrics"])
         lyrics_prompt_str = str(lyrics_prompt).replace("\n", " ")
-        msg = [
-            {
-                "role": "user",
-                "content": lyrics_prompt_str
-            }
-        ]
+        msg = [{"role": "user", "content": lyrics_prompt_str}]
 
         try:
             # Extract context with LLM
             lyrics_context = chat(messages=msg, stream=False)
-            lyrics_context = lyrics_context['choices'][0]['message']['content']
+            if lyrics_context is None:
+                print("error, skipping song")
+                continue
+            lyrics_context_str: str = lyrics_context["choices"][0]["message"]["content"]
 
             # Embed context into 1536-dim vector space
-            embedding = embed(prompt=lyrics_context)
+            embedding = embed(prompt=lyrics_context_str)
+            if embedding is None:
+                print("error, skipping song")
+                continue
             lyrics_embs.append(
                 {
-                    "title": lyrics['title'],
-                    "lyrics": lyrics['lyrics'],
-                    "artist": lyrics['artist'],
-                    "emb": embedding
+                    "title": lyrics["title"],
+                    "lyrics": lyrics["lyrics"],
+                    "artist": lyrics["artist"],
+                    "emb": embedding,
                 }
             )
-        except Exception as e:
+        except Exception:
             print("error")
             continue
 
@@ -57,7 +59,7 @@ def main():
 
     # Save embeddings as a binary file
     print(f"Saving {len(lyrics_embs)} embeddings...")
-    with open(Path("db/lyrics_embs.pkl"), 'wb') as f:
+    with Path("db/lyrics_embs.pkl").open("wb") as f:
         pickle.dump(lyrics_embs, f)
 
 

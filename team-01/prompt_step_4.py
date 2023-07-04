@@ -1,6 +1,8 @@
+# mypy: ignore-errors
 # Step 4: Generate a behind story of the character.
 
 import prompt_step_1
+
 
 SYSTEM_PROMPT = """
 You are a writer. Using a bio of a character in the play, write more DETAILS about the character.
@@ -23,23 +25,10 @@ OUTPUT_PROMPT_EXAMPLE = """{
 }"""
 
 
-
 def get_messages(user_input: str):
     return [
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": INPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "assistant",
-            "content": OUTPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": INPUT_PROMPT_EXAMPLE},
+        {"role": "assistant", "content": OUTPUT_PROMPT_EXAMPLE},
+        {"role": "user", "content": user_input},
     ]

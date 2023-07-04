@@ -1,6 +1,6 @@
+# mypy: ignore-errors
 # Step 2: Generate details about the character using the bio.
 
-import prompt_step_1
 import prompt_step_2
 
 
@@ -56,31 +56,18 @@ OUTPUT_PROMPT_EXAMPLE = """
     "sports brand clothes",
     "casual denim pants",
     "accessories",
-    "hats", 
+    "hats",
     "glasses"
 ]
 """
 
 
-
 def get_messages(user_input: str):
     return [
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": INPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "assistant",
-            "content": OUTPUT_PROMPT_EXAMPLE
-        },
-        {
-            "role": "user",
-            "content": user_input
-        }
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": INPUT_PROMPT_EXAMPLE},
+        {"role": "assistant", "content": OUTPUT_PROMPT_EXAMPLE},
+        {"role": "user", "content": user_input},
     ]
 
 
