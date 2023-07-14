@@ -162,7 +162,9 @@ def show_behind_story(current_profile):
 
 def set_up_default_view():
     st.title("가상 캐스팅")
-    user_input = st.text_input("캐릭터의 성격을 알려주세요.", "유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
+    user_input = st.text_input(label="캐릭터의 성격을 알려주세요.", placeholder="유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
+    if (user_input.strip() == ""):
+        return
     current_profile = show_actor_profile(user_input)
     current_appearance = show_actor_appearance(current_profile)
     show_actor_image(current_appearance)
