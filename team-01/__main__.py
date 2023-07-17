@@ -73,6 +73,9 @@ def show_actor_profile(user_input):
         print(e)
         return
 
+def enable_button(button_key, enabled):
+    st.session_state[button_key] = enabled
+
 
 @st.cache_data
 def show_actor_appearance(current_profile):
@@ -133,7 +136,7 @@ def show_behind_story(current_profile):
     """
     st.subheader("캐릭터 생애 스토리 보기")
     messages = prompt_step_4.get_messages(json.dumps(current_profile))
-    response = send_chat(messages, max_tokens=3000)
+    response = send_chat(messages, max_tokens=2700)
     try:
         print("Step 4 response")
         print(response)
@@ -164,10 +167,27 @@ def set_up_default_view():
     user_input = st.text_input(label="캐릭터의 성격을 알려주세요.", placeholder="유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
     if (user_input.strip() == ""):
         return
+
     current_profile = show_actor_profile(user_input)
-    current_appearance = show_actor_appearance(current_profile)
-    show_actor_image(current_appearance)
-    show_behind_story(current_profile)
+
+    btn_history = st.button('캐릭터 생애 스토리 보기')
+    if st.session_state.get('btn_history', False) != True:
+        st.session_state['btn_history'] = btn_history
+    else:
+        show_behind_story(current_profile)
+
+    btn_appearance = st.button('외모 정보 보기')
+    if st.session_state.get('btn_appearance', False) != True:
+        st.session_state['btn_appearance'] = btn_appearance
+    else:
+        current_appearance = show_actor_appearance(current_profile)
+        btn_image = st.button('이미지 그려보기')
+    
+        if st.session_state.get('btn_image', False) != True:
+            st.session_state['btn_image'] = btn_image
+        else:
+            show_actor_image(current_appearance)
+
 
 
 if __name__ == "__main__":
