@@ -19,15 +19,15 @@ dotenv.load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def send_chat(messages, stream=False, queue=None):
+def send_chat(messages, stream=False, max_tokens=1_000):
     """
     Generate text using ChatGPT as a separate process
     """
     try:
         gpt_res = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            temperature=0.8,
-            max_tokens=1000,
+            temperature=1.0,
+            max_tokens=max_tokens,
             stream=stream,
             n=1,
             messages=messages,
@@ -45,7 +45,7 @@ def show_actor_profile(user_input):
     Step 1: Generate a bio of a character in the play.
     """
     messages = prompt_step_1.get_messages(user_input)
-    response = send_chat(messages)
+    response = send_chat(messages, max_tokens=500)
     try:
         print("Step 1 response")
         print(response)
@@ -81,8 +81,7 @@ def show_actor_appearance(current_profile):
     """
     st.subheader("캐릭터 외형 정보 보기")
     messages = prompt_step_2.get_messages(json.dumps(current_profile))
-    response = send_chat(messages)
-    response = send_chat(messages)
+    response = send_chat(messages, max_tokens=1200)
     try:
         print("Step 2 response")
         print(response)
@@ -134,19 +133,19 @@ def show_behind_story(current_profile):
     """
     st.subheader("캐릭터 생애 스토리 보기")
     messages = prompt_step_4.get_messages(json.dumps(current_profile))
-    response = send_chat(messages)
+    response = send_chat(messages, max_tokens=3000)
     try:
         print("Step 4 response")
         print(response)
         actor_detail_json = json.loads(response)
         current_history = {
-            "precious_memory": actor_detail_json["precious_memory"],
+            "happy_moment": actor_detail_json["happy_moment"],
             "tragic_moment": actor_detail_json["tragic_moment"],
             "current_life": actor_detail_json["current_life"],
         }
 
         st.subheader("소중한 기억")
-        st.write(actor_detail_json["precious_memory"])
+        st.write(actor_detail_json["happy_moment"])
 
         st.subheader("트라우마")
         st.write(actor_detail_json["tragic_moment"])
