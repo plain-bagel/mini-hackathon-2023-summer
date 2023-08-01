@@ -1,5 +1,6 @@
-import main
 import streamlit as st
+
+import mini_hack.team_04.main as main
 
 
 setting = st.text_area("GPT에게 지시할 내용")

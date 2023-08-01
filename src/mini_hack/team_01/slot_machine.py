@@ -5,11 +5,9 @@ import os
 import dotenv
 import openai
 import pandas as pd
-import prompt_step_1
-import prompt_step_2
-import prompt_step_3
-import prompt_step_4
 import streamlit as st
+
+from mini_hack.team_01.prompt_steps import prompt_step_1, prompt_step_2, prompt_step_3, prompt_step_4
 
 
 # Load Environment variables and have them as constants
@@ -72,6 +70,7 @@ def show_actor_profile(user_input):
     except Exception as e:
         print(e)
         return
+
 
 def enable_button(button_key, enabled):
     st.session_state[button_key] = enabled
@@ -164,30 +163,31 @@ def show_behind_story(current_profile):
 
 def set_up_default_view():
     st.title("가상 캐스팅")
-    user_input = st.text_input(label="캐릭터의 성격을 알려주세요.", placeholder="유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘.")
-    if (user_input.strip() == ""):
+    user_input = st.text_input(
+        label="캐릭터의 성격을 알려주세요.", placeholder="유튜버 겸 모델 출신 인플루언서 SNS없이 못 사는 인생은 폼생폼사 20대 초반 남자 캐릭터 만들어 줘."
+    )
+    if user_input.strip() == "":
         return
 
     current_profile = show_actor_profile(user_input)
 
-    btn_history = st.button('캐릭터 생애 스토리 보기')
-    if st.session_state.get('btn_history', False) != True:
-        st.session_state['btn_history'] = btn_history
+    btn_history = st.button("캐릭터 생애 스토리 보기")
+    if st.session_state.get("btn_history", False) is not True:
+        st.session_state["btn_history"] = btn_history
     else:
         show_behind_story(current_profile)
 
-    btn_appearance = st.button('외모 정보 보기')
-    if st.session_state.get('btn_appearance', False) != True:
-        st.session_state['btn_appearance'] = btn_appearance
+    btn_appearance = st.button("외모 정보 보기")
+    if st.session_state.get("btn_appearance", False) is not True:
+        st.session_state["btn_appearance"] = btn_appearance
     else:
         current_appearance = show_actor_appearance(current_profile)
-        btn_image = st.button('이미지 그려보기')
-    
-        if st.session_state.get('btn_image', False) != True:
-            st.session_state['btn_image'] = btn_image
+        btn_image = st.button("이미지 그려보기")
+
+        if st.session_state.get("btn_image", False) is not True:
+            st.session_state["btn_image"] = btn_image
         else:
             show_actor_image(current_appearance)
-
 
 
 if __name__ == "__main__":

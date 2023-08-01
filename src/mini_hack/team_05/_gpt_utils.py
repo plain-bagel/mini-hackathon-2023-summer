@@ -13,9 +13,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def chat(
-    messages: list[dict[str, str]], stream: bool = False, queue: Queue | None = None
-) -> OpenAIObject | None:
+def chat(messages: list[dict[str, str]], stream: bool = False, queue: Queue | None = None) -> OpenAIObject | None:
     """
     Generate text using ChatGPT as a separate process
     """

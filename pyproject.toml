@@ -1,3 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mini-hack"
+version = "2023.0.1"
+readme = "README.md"
+description = "Projects from the PlainBagel Mini-Hack 2023"
+requires-python = ">=3.11"
+dependencies = [
+    "openai",
+    "streamlit",
+    "python-dotenv",
+    "pandas",
+    "tweepy",
+    "watchdog"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black[d]>=23.3.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.0.276",
+    "mypy>=1.4.1",
+    "watchdog>=3.0.0",
+    "httpx>=0.24.1"
+]
+
+[tool.hatch.build]
+packages = [
+    "src/mini_hack"
+]
+#only-packages = true
+skip-excluded-dirs = true
+exclude = [
+    "/.github",
+    "/.idea",
+    ".gitignore",
+    "src/mini_hack/team_03",
+]
+artifacts = [
+    "*.pkl",
+    "*.so",
+    "*.dll",
+]
+#macos-max-compat = false
+
+#[tool.hatch.build.targets.wheel.hooks.mypyc]
+#dependencies = ["hatch-mypyc"]
+#include=["src/playground/placeholder.py"]
+
+
 [tool.black]
 line-length = 120
 target-version = ['py311']
@@ -58,10 +112,3 @@ lines-after-imports = 2
 combine-as-imports = true
 
 
-[project]
-name = "PlainBagel 2023 Summer Mini-Hackathon"
-description = "Projects done during the 2023 Summer Mini-Hackathon"
-requires-python = ">=3.11"
-authors = [
-    { name = "PlainBagel Devs", email = "" },
-]
