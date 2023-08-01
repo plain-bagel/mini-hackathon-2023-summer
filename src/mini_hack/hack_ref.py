@@ -14,9 +14,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def chat(
-    messages: list[dict[str, str]], stream: bool = False, queue: Queue | None = None
-) -> OpenAIObject | None:
+def chat(messages: list[dict[str, str]], stream: bool = False, queue: Queue | None = None) -> OpenAIObject | None:
     """
     Generate text using ChatGPT as a separate process
     """
@@ -123,9 +121,7 @@ def main() -> None:
     if embedding1 is None or embedding2 is None or embedding3 is None:
         print("Error in embedding")
         return
-    print(
-        f"The embeddings are of type {type(embedding1)} and their elements are of type {type(embedding1[0])}\n\n"
-    )
+    print(f"The embeddings are of type {type(embedding1)} and their elements are of type {type(embedding1[0])}\n\n")
 
     # Useful: Compare vector space distances (Euclidean / Cosine)
     import numpy as np
@@ -135,15 +131,9 @@ def main() -> None:
         np.array(embedding2),
         np.array(embedding3),
     )
-    print(
-        f"Distance between embedding1 and embedding2: {np.linalg.norm(np_emb1 - np_emb2)}"
-    )
-    print(
-        f"Distance between embedding1 and embedding3: {np.linalg.norm(np_emb1 - np_emb3)}"
-    )
-    print(
-        f"Distance between embedding2 and embedding3: {np.linalg.norm(np_emb2 - np_emb3)}"
-    )
+    print(f"Distance between embedding1 and embedding2: {np.linalg.norm(np_emb1 - np_emb2)}")
+    print(f"Distance between embedding1 and embedding3: {np.linalg.norm(np_emb1 - np_emb3)}")
+    print(f"Distance between embedding2 and embedding3: {np.linalg.norm(np_emb2 - np_emb3)}")
     # 코사인 거리를 활용하고 싶으면 scipy.spatial.distance.cosine을 사용하면 된다.
     # (1, 2)는 맥락적으로 가깝지만, (1, 3)이나 (2, 3)은 맥락적으로 가깝지 않음을 볼 수 있다.
     # 이를 활용한 텍스트 데이터베이스에서의 색출 / 쿼리에 따른 추천 랭킹 등을 매길 수 있다.

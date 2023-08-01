@@ -12,14 +12,15 @@ from pathlib import Path
 
 import numpy as np
 import streamlit as st
-from _gpt_utils import chat, embed
-from _prompt import Prompt
 
+from mini_hack.team_05._gpt_utils import chat, embed
+from mini_hack.team_05._prompt import Prompt
+from mini_hack.team_05 import DB_DIR, PROMPT_DIR
 
 # Paths to prompts and lyrics DB
-DIALOGUE_PROMPT_PATH = Path("prompts/dialogue_prompt.txt")
-RECOMMEND_PROMPT_PATH = Path("prompts/recommendation_prompt.txt")
-LYRICS_DB_PATH = Path("db/lyrics_embs.pkl")
+DIALOGUE_PROMPT_PATH = Path(PROMPT_DIR, "dialogue_prompt.txt")
+RECOMMEND_PROMPT_PATH = Path(PROMPT_DIR, "recommendation_prompt.txt")
+LYRICS_DB_PATH = Path(DB_DIR, "lyrics_embs.pkl")
 
 LyricsDB = list[dict[str, str | list[float]]]
 

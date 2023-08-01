@@ -1,7 +1,0 @@
-ipykernel==6.24.0
-jupyter==1.0.0
-openai==0.27.8
-panel==1.1.1
-python-dotenv==1.0.0
-redlines==0.3.0
-streamlit==1.24.0

@@ -1,7 +1,7 @@
 # mypy: ignore-errors
 # Step 2: Generate details about the character using the bio.
 
-import prompt_step_2
+from mini_hack.team_01.prompt_steps import prompt_step_2
 
 
 SYSTEM_PROMPT = """
